@@ -71,10 +71,10 @@ Spark 性能调优的第一步，就是为任务分配更多的资源，在一�
 #### 1.2.1	RDD 复用
 
 在对 RDD 进行算子时， 要避免相同的算子和计算逻辑之下对 RDD 进行重复的计算，如图 2-1 所示：
-![重复计算 图2-1](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-rdd-review.jpg)
+![重复计算 图2-1](./images/spark-rdd-review.jpg)
 
 对图 2-1 中的 RDD 计算架构进行修改， 得到如所示的优化结果： 
-![rdd图 2-2 ](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-rdd-review1.jpg)
+![rdd图 2-2 ](./images/spark-rdd-review1.jpg)
 
 
 #### 1.2.2	RDD 持久化
@@ -178,11 +178,11 @@ val conf = new SparkConf().set("spark.locality.wait", "6")
 #### 1.2.0 算子调优一：mapPartitions
 
 普通的 map 算子对 RDD 中的每一个元素进行操作，而 mapPartitions 算子对 RDD 中每一个分区进行操作。如果是普通的 map 算子，假设一个 partition 有 1 万条数据， 那么 map 算子中的 function 要执行 1 万次， 也就是对每个元素进行操作。
-![mapPartition](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-mapPartition.jpg)
+![mapPartition](./images/spark-mapPartition.jpg)
 图 2-3 map 算子
 如果是 mapPartition 算子， 由于一个 task 处理一个 RDD 的 partition， 那么一个
 task 只会执行一次 function， function 一次接收所有的 partition 数据，效率比较高。
-![mapPartition](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-partition-data.jpg)
+![mapPartition](./images/spark-partition-data.jpg)
 图 2-4 mapPartitions 算子
 
 
@@ -201,7 +201,7 @@ task 只会执行一次 function， function 一次接收所有的 partition 数
 foreachPartition  算子的特性， 可以优化写数据库的性能。
 如果使用 foreach 算子完成数据库的操作，由于 foreach 算子是遍历 RDD 的每条数据，因此，每条数据都会建立一个数据库连接，这是对资源的极大浪费，因此， 对于写数据库操作，我们应当使用 foreachPartition 算子。
 与 mapPartitions 算子非常相似，foreachPartition 是将 RDD 的每个分区作为遍历对象，一次处理一个分区的数据， 也就是说， 如果涉及数据库的相关操作， 一个分区的数据只需要创建一次数据库连接，如图 2-5 所示： 
-![](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-foreachPartition.jpg)
+![](./images/spark-foreachPartition.jpg)
 图 2-5 foreachPartition 算子
 
 使用了 foreachPartition 算子后，可以获得以下的性能提升：   
@@ -217,7 +217,7 @@ foreachPartition 算子存在一个问题，与 mapPartitions 算子类似，如
 在 Spark 任务中我们经常会使用 filter 算子完成 RDD 中数据的过滤，在任务初始阶段，从各个分区中加载到的数据量是相近的，但是一旦进过 filter 过滤后，每个分区的数据量有可能会存在较大差异， 如图 2-6 所示：   
 
 图 2-6  分区数据过滤结果
-![filter于coalesce](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-filter1.jpg)
+![filter于coalesce](./images/spark-filter1.jpg)
 
 根据图 2-6 我们可以发现两个问题：   
 1.	每个 partition 的数据量变小了，如果还按照之前与 partition 相等的 task 个数去处理当前数据，有点浪费 task 的计算资源；  
@@ -252,7 +252,7 @@ Spark SQL 的并行度不允许用户自己指定，Spark SQL 自己会默认根
 而 Spark  SQL 自动设置的task 数量很少， 这就意味着每个 task 要处理为数不少的数据量，然后还要执行非常复杂的处理逻辑，
 这就可能表现为第一个有 Spark SQL 的 stage 速度很慢，而后续的没有 Spark SQL 的 stage 运行速度非常快。为了解决 Spark  SQL  无法设置并行度和 task  数量的问题， 我们可以使用repartition 算子。
 
-![filter于coalesce](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-repartition.jpg)
+![filter于coalesce](./images/spark-repartition.jpg)
 图 2-7 repartition算子使用前后对比图
 
 Spark SQL 这一步的并行度和 task 数量肯定是没有办法去改变了，但是， 对于Spark SQL 查询出来的 RDD， 立即使用 repartition 算子， 去重新进行分区， 这样可以重新分区为多个 partition，从 repartition 之后的 RDD 操作，由于不再设计 Spark
@@ -260,7 +260,7 @@ SQL，因此 stage 的并行度就会等于你手动设置的值，这样就避�
 
 #### 1.2.4	算子调优五：reduceByKey 本地聚合
 reduceByKey 相较于普通的 shuffle 操作一个显著的特点就是会进行 map 端的本地聚合，map 端会先对本地的数据进行 combine 操作，然后将数据写入给下个 stage 的每个 task  创建的文件中， 也就是在 map  端，对每一个 key  对应的 value，执行reduceByKey 算子函数。reduceByKey 算子的执行过程如图 2-8 所示： 
-![reduceBykey](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-reduceBykey.jpg)
+![reduceBykey](./images/spark-reduceBykey.jpg)
 图 2-8 reduceByKey 算子执行过程
 
 使 用 reduceByKey 对性能的提升如下：  
@@ -272,9 +272,9 @@ reduceByKey 相较于普通的 shuffle 操作一个显著的特点就是会进�
 
 基于 reduceByKey 的本地聚合特征， 我们应该考虑使用 reduceByKey 代替其他的 shuffle 算子，例如 groupByKey。reduceByKey 与 groupByKey 的运行原理如图 2-9 和图 2-10 所示： 
 图 2-9 groupByKey 原理
-![groupBykey](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-groupBykey.jpg)
+![groupBykey](./images/spark-groupBykey.jpg)
 图 2-10 reduceByKey 原理
-![reduceBykey-info](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-reducebykey-info.jpg)
+![reduceBykey-info](./images/spark-reducebykey-info.jpg)
 根据上图可知， groupByKey 不会进行 map 端的聚合， 而是将所有 map 端的数据 shuffle 到 reduce 端， 然后在 reduce 端进行数据的聚合操作。由于 reduceByKey 有 map  端 聚 合 的 特 性 ， 使 得 网 络 传 输 的 数 据 量 减 小 ， 因 此 效 率 要 明 显 高 于
 groupByKey。
 
@@ -450,7 +450,7 @@ task 的数据压力，以及数据倾斜的问题， 适用于有较多 key 对
 key 实现双重聚合，如图 3-1 所示： 
 
 图 3-1 随机 key 实现双重聚合
-![image](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-radomkey-join.jpg)
+![image](./images/spark-radomkey-join.jpg)
 
 首先， 通过 map 算子给每个数据的 key 添加随机数前缀， 对 key 进行打散， 将原先一样的 key 变成不一样的 key， 然后进行第一次聚合， 这样就可以让原本被一个 task 处理的数据分散到多个 task 上去做局部聚合；随后，去除掉每个 key 的前缀， 再次进行聚合。
 此方法对于由 groupByKey、reduceByKey 这类算子造成的数据倾斜由比较好的效果，仅仅适用于聚合类的 shuffle 操作，适用范围相对较窄。如果是 join 类的 shuffle 操作，还得用其他的解决方案。
@@ -460,7 +460,7 @@ key 实现双重聚合，如图 3-1 所示：
 
 正常情况下， join 操作都会执行 shuffle 过程，并且执行的是 reduce join，也就是先将所有相同的 key 和对应的 value 汇聚到一个 reduce task 中，然后再进行 join。普通 join 的过程如下图所示：
 图 3-2  普通 join 过程
-![image](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-sample-jion.jpg)
+![image](./images/spark-sample-jion.jpg)
 
 普通的 join 是会走 shuffle 过程的，而一旦 shuffle，就相当于会将相同 key 的数据拉取到一个 shuffle read task 中再进行 join， 此时就是 reduce join。但是如果一个
 RDD 是比较小的，则可以采用广播小 RDD 全量数据+map 算子来实现与 join 同样的效果，也就是 map join，此时就不会发生 shuffle 操作，也就不会发生数据倾斜。
@@ -479,7 +479,7 @@ key 进行比对，如果连接 key 相同的话，那么就将两个 RDD 的数
 
 图 3-3 map join 过程
 
-![image](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-map-join.jpg)
+![image](./images/spark-map-join.jpg)
 
 2. 不适用场景分析：
 由于 Spark 的广播变量是在每个 Executor 中保存一个副本，如果两个 RDD 数据量都比较大， 那么如果将一个数据量比较大的 RDD 做成广播变量，那么很有可能会造成内存溢出。
@@ -494,7 +494,7 @@ key 对应的数据打散，由不同的 reduce 端 task 进行处理。
 
 1．适用场景分析：
 图 3-4 倾斜 key 单独 join 流程
-![image](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-key-xingxie-join.jpg)
+![image](./images/spark-key-xingxie-join.jpg)
 对于 RDD 中的数据，可以将其转换为一个中间表，或者是直接使用 countByKey() 的方式，看一个这个 RDD 中各个 key 对应的数据量，此时如果你发现整个 RDD 就一个 key 的数据量特别多，那么就可以考虑使用这种方法。
 当数据量非常大时，可以考虑使用 sample  采样获取 10%的数据， 然后分析这
 10%的数据中哪个 key 可能会导致数据倾斜， 然后将这个 key 对应的数据单独提取出来。
@@ -517,7 +517,7 @@ key 对应的数据打散，由不同的 reduce 端 task 进行处理。
 
 2.	局限性：
 图 3-6  使用随机数以及扩容进行 join
-![image](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-join-radom.jpg)
+![image](./images/spark-join-radom.jpg)
 如果两个 RDD 都很大，那么将 RDD 进行 N 倍的扩容显然行不通； 使用扩容的方式只能缓解数据倾斜，不能彻底解决数据倾斜问题。
 3.	使用方案七对方案六进一步优化分析：
 当 RDD 中有几个 key 导致数据倾斜时，方案六不再适用，而方案七又非常消耗资源，此时可以引入方案七的思想完善方案六：
@@ -575,7 +575,7 @@ val conf = new SparkConf().set("spark.shuffle.io.maxRetries", "60").set("spark.s
 
 YARN-client 模式的运行原理如下图所示： 
 
-![yarn-client](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-yarn-client.jpg)
+![yarn-client](./images/spark-yarn-client.jpg)
 
 图 4-1 YARN-client 模式运行原理
 在 YARN-client 模式下， Driver 启动在本地机器上， 而 Driver 负责所有的任务调度，需要与 YARN 集群上的多个 Executor 进行频繁的通信。
@@ -588,7 +588,7 @@ YARN-client 模式的运行原理如下图所示：
 存溢出无法执行问题
 
 YARN-cluster 模式的运行原理如下图所示： 
-![yarn-client](https://github.com/marxlee/Development-doc/blob/master/spark/images/spark-yarn-cluster.jpg)
+![yarn-client](./images/spark-yarn-cluster.jpg)
 
 
 图 4-1 YARN-client 模式运行原理
