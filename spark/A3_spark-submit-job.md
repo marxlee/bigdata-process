@@ -23,8 +23,8 @@
 6、所有的提交方式  
 7、deploy-mode  client模式和cluster模式  
 
-client模式：一般用在测试过程中，Driver运行在client的主机上。一般会等待整个程序的执行完成。
-cluster模式： 一般是生产环境中，Client在提交Jar包之后，退出，不等待整个应用程序的执行，Driver会运行在某一个worker上。
+* client模式：一般用在测试过程中，Driver运行在client的主机上。一般会等待整个程序的执行完成。
+* cluster模式： 一般是生产环境中，Client在提交Jar包之后，退出，不等待整个应用程序的执行，Driver会运行在某一个worker上。
 
 
 ## IDEA环境应用
