@@ -35,7 +35,7 @@ Spark得到了众多大数据公司的支持，这些公司包括Hortonworks、I
 
 ## Spark角色介绍及运行模式
 ### 集群角色
-![集群](./images/spark-distribut.jpg.jpg)
+![集群](images/spark-distribut.jpg)
 
 从物理部署层面上来看，Spark主要分为两种类型的节点，Master节点和Worker节点：Master节点主要运行集群管理器的中心化部分，所承载的作用是分配Application到Worker节点，维护Worker节点，Driver，Application的状态。Worker节点负责具体的业务运行。  
 
@@ -49,13 +49,13 @@ local[K]: 指定使用几个线程来运行计算，比如local[4]就是运行4�
 local[*]: 这种模式直接帮你按照cpu最多cores来设置线程数了。  
 
 2）Standalone模式: 构建一个由Master+Slave构成的Spark集群，Spark运行在集群中。  
-![Standalone](./images/Spark-Standalone.jpg.jpg)
+![Standalone](images/Spark-Standalone.jpg)
 
 3）Yarn模式: Spark客户端直接连接Yarn；不需要额外构建Spark集群。有yarn-client和yarn-cluster两种模式，主要区别在于：Driver程序的运行节点。  
 yarn-client：Driver程序运行在客户端，适用于交互、调试，希望立即看到app的输出  
 yarn-cluster：Driver程序运行在由RM（ResourceManager）启动的AP（APPMaster）适用于生产环境  
 
-![yarn](./images/Spark-yarn.jpg.jpg)
+![yarn](images/Spark-yarn.jpg)
 
 4）Mesos模式:Spark客户端直接连接Mesos；不需要额外构建Spark集群。国内应用比较少，更多的是运用yarn调度。  
 

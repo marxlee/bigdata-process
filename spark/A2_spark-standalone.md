@@ -73,7 +73,7 @@ application-arguments: 传给main()方法的参数
 
 该算法是利用蒙特•卡罗算法求PI
 ```
-![PI](./images/Spark-run-PI.jpg.jpg)
+![PI](images/Spark-run-PI.jpg)
 
 ```
 
@@ -171,7 +171,7 @@ spark.history.retainedApplications=3   指定保存Application历史记录的个
 7）查看历史服务
 hadoop102:4000
 ```
-![Run-job](./images/Spark-run-job.jpg.jpg)
+![Run-job](images/Spark-run-job.jpg)
 
 
 
